@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather Glass</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ffffff, #dbeafe);
+    overflow-x: hidden;
+    color: #111827;
+}
+
+/* Background Blobs */
+
+.bg1,
+.bg2 {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: -1;
+}
+
+.bg1 {
+    width: 400px;
+    height: 400px;
+    background: #60a5fa;
+    top: -100px;
+    left: -100px;
+}
+
+.bg2 {
+    width: 450px;
+    height: 450px;
+    background: #93c5fd;
+    bottom: -150px;
+    right: -100px;
+}
+
+/* Layout */
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
+    padding: 30px 0;
+}
+
+/* Glass Effect */
+
+.glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-radius: 30px;
+}
+
+/* Hero Section */
+
+.hero {
+    padding: 35px;
+    margin-bottom: 25px;
+}
+
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* Search Bar */
+
+.search {
+    display: flex;
+    gap: 10px;
+}
+
+.search input {
+    width: 260px;
+    padding: 14px;
+    border: none;
+    border-radius: 15px;
+    outline: none;
+}
+
+.search button {
+    padding: 14px 20px;
+    border: none;
+    border-radius: 15px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+/* Clock */
+
+.clock {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Weather Main */
+
+.weather-main {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.temp {
+    font-size: 90px;
+    font-weight: 700;
+}
+
+.city {
+    font-size: 24px;
+    margin-top: 10px;
+}
+
+/* Information Cards */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.card {
+    padding: 25px;
+}
+
+.card h3 {
+    margin-bottom: 15px;
+}
+
+.value {
+    font-size: 30px;
+    font-weight: 700;
+}
+
+/* Forecast Section */
+
+.forecast {
+    margin-top: 25px;
+    padding: 25px;
+}
+
+.forecast-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+}
+
+.day {
+    text-align: center;
+    padding: 20px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Music Button */
+
+.music-btn {
+    margin-top: 20px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 15px;
+    background: #111827;
+    color: white;
+    cursor: pointer;
+}
+
+/* Footer */
+
+.footer {
+    text-align: center;
+    margin: 30px 0;
+    opacity: 0.7;
+}
+
+/* Loader */
+
+.loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(15px);
+
+    z-index: 9999;
+}
+
+.loader-card {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 25px;
+
+    padding: 30px;
+    text-align: center;
+
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+
+    margin: 0 auto 15px;
+
+    border: 5px solid rgba(37, 99, 235, 0.2);
+    border-top: 5px solid #2563eb;
+    border-radius: 50%;
+
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+
+    .temp {
+        font-size: 60px;
+    }
+
+    .search {
+        width: 100%;
+    }
+
+    .search input {
+        width: 100%;
+    }
+
+}
+</style>
+</head>
+<body>
+
+    <div class="bg1"></div>
+    <div class="bg2"></div>
+
+    <div class="container">
+
+        <div class="glass hero">
+
+            <div class="top">
+                <div>
+                    <h1>Weather Forecasting</h1>
+                    <p>Premium Apple Style Forecast Dashboard</p>
+                </div>
+
+                <div class="clock" id="clock"></div>
+            </div>
+
+            <div class="search" style="margin-top:20px">
+                <input id="cityInput" placeholder="Search city">
+                <button onclick="searchCity()">Search</button>
+            </div>
+
+            <div class="weather-main">
+                <div>
+                    <div class="temp" id="temp">--°</div>
+                    <div class="city" id="city">Loading...</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid">
+
+            <div class="glass card">
+                <h3>Wind Speed</h3>
+                <div class="value" id="wind">--</div>
+            </div>
+
+            <div class="glass card">
+                <h3>Humidity</h3>
+                <div class="value" id="humidity">--</div>
+            </div>
+
+            <div class="glass card">
+                <h3>Feels Like</h3>
+                <div class="value" id="feels">--</div>
+            </div>
+
+            <div class="glass card">
+                <h3>Updated</h3>
+                <div class="value" id="updated">--</div>
+            </div>
+
+        </div>
+
+        <div class="glass forecast">
+
+            <h2 style="margin-bottom:20px">7-Day Forecast</h2>
+
+            <div class="forecast-row" id="forecast">
+                <div class="day">Loading...</div>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            Weather data powered by Open-Meteo
+        </div>
+
+    </div>
+
+    <div id="loader" class="loader">
+        <div class="loader-card">
+            <div class="spinner"></div>
+            <p>Loading Weather...</p>
+        </div>
+    </div>
+
+    <script>
+
+        const clock = document.getElementById('clock');
+
+        setInterval(() => {
+            clock.innerHTML = new Date().toLocaleTimeString();
+        }, 1000);
+
+
+        async function loadWeather(lat, lon, name) {
+
+            document.getElementById('loader').style.display = 'flex';
+
+            try {
+
+                const url =
+                    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                document.getElementById('temp').innerHTML =
+                    Math.round(data.current.temperature_2m) + '°C';
+
+                document.getElementById('city').innerHTML =
+                    name;
+
+                document.getElementById('wind').innerHTML =
+                    data.current.wind_speed_10m + ' km/h';
+
+                document.getElementById('humidity').innerHTML =
+                    data.current.relative_humidity_2m + '%';
+
+                document.getElementById('feels').innerHTML =
+                    Math.round(data.current.apparent_temperature) + '°C';
+
+                document.getElementById('updated').innerHTML =
+                    data.current.time.split('T')[1];
+
+                let html = '';
+
+                for (let i = 0; i < 7; i++) {
+
+                    const day = new Date(data.daily.time[i]);
+
+                    html += `
+                    <div class="day">
+                        <h4>${day.toLocaleDateString('en-US', {
+                            weekday: 'short'
+                        })}</h4>
+                        <br>
+                        <div>${Math.round(data.daily.temperature_2m_max[i])}°</div>
+                        <div>${Math.round(data.daily.temperature_2m_min[i])}°</div>
+                    </div>
+                    `;
+                }
+
+                document.getElementById('forecast').innerHTML = html;
+
+            } finally {
+
+                document.getElementById('loader').style.display = 'none';
+
+            }
+        }
+
+
+        async function searchCity() {
+
+            const city =
+                document.getElementById('cityInput').value;
+
+            if (!city) return;
+
+            document.getElementById('loader').style.display = 'flex';
+
+            try {
+
+                const geo = await fetch(
+                    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`
+                );
+
+                const data = await geo.json();
+
+                if (!data.results) return;
+
+                const place = data.results[0];
+
+                await loadWeather(
+                    place.latitude,
+                    place.longitude,
+                    place.name + ', ' + place.country
+                );
+
+            } finally {
+
+                document.getElementById('loader').style.display = 'none';
+
+            }
+        }
+
+
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+
+                loadWeather(
+                    pos.coords.latitude,
+                    pos.coords.longitude,
+                    'Current Location'
+                );
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>
