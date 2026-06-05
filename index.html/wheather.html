@@ -267,199 +267,223 @@ body {
 </style>
 </head>
 <body>
+<div class="bg1"></div><div class="bg2"></div>
+<div class="container">
+<div class="glass hero">
+<div class="top"><div><h1>Weather Forecasting</h1><p>⛅🌡</p></div><div class="clock" id="clock"></div></div>
+<div class="search" style="margin-top:20px"><input id="cityInput" placeholder="Search city"><button onclick="searchCity()">Search</button></div>
+<div class="weather-main"><div><div class="temp" id="temp">--°</div><div class="city" id="city">Loading...</div></div></div>
+</div>
+<div class="grid">
+<div class="glass card"><h3>Wind Speed</h3><div class="value" id="wind">--</div></div>
+<div class="glass card"><h3>Humidity</h3><div class="value" id="humidity">--</div></div>
+<div class="glass card"><h3>Feels Like</h3><div class="value" id="feels">--</div></div>
+<div class="glass card"><h3>Updated</h3><div class="value" id="updated">--</div></div>
+</div>
+<div class="glass forecast"><h2 style="margin-bottom:20px">7-Day Forecast📃</h2><div class="forecast-row" id="forecast"><div class="day">Loading...</div></div></div>
+<div class="footer">Weather data powered by Open-Meteo</div>
+</div>
+<div id="loader" class="loader"><div class="loader-card"><div class="spinner"></div><p>Loading Weather...</p></div></div>
+<script>
 
-    <div class="bg1"></div>
-    <div class="bg2"></div>
+const clock = document.getElementById('clock');
 
-    <div class="container">
+let currentLat = null;
+let currentLon = null;
+let currentLocationName = 'Current Location';
 
-        <div class="glass hero">
+setInterval(() => {
+    clock.innerHTML = new Date().toLocaleTimeString();
+}, 1000);
 
-            <div class="top">
-                <div>
-                    <h1>Weather Forecasting</h1>
-                    <p>Premium Apple Style Forecast Dashboard</p>
-                </div>
+async function loadWeather(lat, lon, name) {
 
-                <div class="clock" id="clock"></div>
-            </div>
+    const loader = document.getElementById('loader');
+    loader.style.display = 'flex';
 
-            <div class="search" style="margin-top:20px">
-                <input id="cityInput" placeholder="Search city">
-                <button onclick="searchCity()">Search</button>
-            </div>
+    try {
 
-            <div class="weather-main">
-                <div>
-                    <div class="temp" id="temp">--°</div>
-                    <div class="city" id="city">Loading...</div>
-                </div>
-            </div>
+        const url =
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
 
-        </div>
+        const response = await fetch(url);
 
-        <div class="grid">
+        if (!response.ok) {
+            throw new Error('Failed to fetch weather');
+        }
 
-            <div class="glass card">
-                <h3>Wind Speed</h3>
-                <div class="value" id="wind">--</div>
-            </div>
+        const data = await response.json();
 
-            <div class="glass card">
-                <h3>Humidity</h3>
-                <div class="value" id="humidity">--</div>
-            </div>
+        document.getElementById('temp').innerHTML =
+            Math.round(data.current.temperature_2m) + '°C';
 
-            <div class="glass card">
-                <h3>Feels Like</h3>
-                <div class="value" id="feels">--</div>
-            </div>
+        document.getElementById('city').innerHTML = name;
 
-            <div class="glass card">
-                <h3>Updated</h3>
-                <div class="value" id="updated">--</div>
-            </div>
+        document.getElementById('wind').innerHTML =
+            data.current.wind_speed_10m + ' km/h';
 
-        </div>
+        document.getElementById('humidity').innerHTML =
+            data.current.relative_humidity_2m + '%';
 
-        <div class="glass forecast">
+        document.getElementById('feels').innerHTML =
+            Math.round(data.current.apparent_temperature) + '°C';
 
-            <h2 style="margin-bottom:20px">7-Day Forecast</h2>
+        document.getElementById('updated').innerHTML =
+            new Date().toLocaleTimeString();
 
-            <div class="forecast-row" id="forecast">
-                <div class="day">Loading...</div>
-            </div>
+        let html = '';
 
-        </div>
+        for (let i = 0; i < 7; i++) {
 
-        <div class="footer">
-            Weather data powered by Open-Meteo
-        </div>
+            const day = new Date(data.daily.time[i]);
 
-    </div>
-
-    <div id="loader" class="loader">
-        <div class="loader-card">
-            <div class="spinner"></div>
-            <p>Loading Weather...</p>
-        </div>
-    </div>
-
-    <script>
-
-        const clock = document.getElementById('clock');
-
-        setInterval(() => {
-            clock.innerHTML = new Date().toLocaleTimeString();
-        }, 1000);
-
-
-        async function loadWeather(lat, lon, name) {
-
-            document.getElementById('loader').style.display = 'flex';
-
-            try {
-
-                const url =
-                    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
-
-                const response = await fetch(url);
-                const data = await response.json();
-
-                document.getElementById('temp').innerHTML =
-                    Math.round(data.current.temperature_2m) + '°C';
-
-                document.getElementById('city').innerHTML =
-                    name;
-
-                document.getElementById('wind').innerHTML =
-                    data.current.wind_speed_10m + ' km/h';
-
-                document.getElementById('humidity').innerHTML =
-                    data.current.relative_humidity_2m + '%';
-
-                document.getElementById('feels').innerHTML =
-                    Math.round(data.current.apparent_temperature) + '°C';
-
-                document.getElementById('updated').innerHTML =
-                    data.current.time.split('T')[1];
-
-                let html = '';
-
-                for (let i = 0; i < 7; i++) {
-
-                    const day = new Date(data.daily.time[i]);
-
-                    html += `
-                    <div class="day">
-                        <h4>${day.toLocaleDateString('en-US', {
+            html += `
+                <div class="day">
+                    <h4>
+                        ${day.toLocaleDateString('en-US', {
                             weekday: 'short'
-                        })}</h4>
-                        <br>
-                        <div>${Math.round(data.daily.temperature_2m_max[i])}°</div>
-                        <div>${Math.round(data.daily.temperature_2m_min[i])}°</div>
+                        })}
+                    </h4>
+
+                    <br>
+
+                    <div>
+                        ${Math.round(data.daily.temperature_2m_max[i])}°
                     </div>
-                    `;
-                }
 
-                document.getElementById('forecast').innerHTML = html;
-
-            } finally {
-
-                document.getElementById('loader').style.display = 'none';
-
-            }
+                    <div>
+                        ${Math.round(data.daily.temperature_2m_min[i])}°
+                    </div>
+                </div>
+            `;
         }
 
+        document.getElementById('forecast').innerHTML = html;
 
-        async function searchCity() {
+    } catch (error) {
 
-            const city =
-                document.getElementById('cityInput').value;
+        console.error(error);
 
-            if (!city) return;
+        document.getElementById('city').innerHTML =
+            'Unable to load weather';
 
-            document.getElementById('loader').style.display = 'flex';
+    } finally {
 
-            try {
+        loader.style.display = 'none';
 
-                const geo = await fetch(
-                    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`
-                );
+    }
+}
 
-                const data = await geo.json();
+async function searchCity() {
 
-                if (!data.results) return;
+    const city =
+        document.getElementById('cityInput').value.trim();
 
-                const place = data.results[0];
+    if (!city) return;
 
-                await loadWeather(
-                    place.latitude,
-                    place.longitude,
-                    place.name + ', ' + place.country
-                );
+    document.getElementById('loader').style.display = 'flex';
 
-            } finally {
+    try {
 
-                document.getElementById('loader').style.display = 'none';
-
-            }
-        }
-
-
-        navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-
-                loadWeather(
-                    pos.coords.latitude,
-                    pos.coords.longitude,
-                    'Current Location'
-                );
-
-            }
+        const geo = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`
         );
 
-    </script>
+        const data = await geo.json();
 
+        if (!data.results || data.results.length === 0) {
+
+            alert('City not found');
+            document.getElementById('loader').style.display = 'none';
+            return;
+
+        }
+
+        const place = data.results[0];
+
+        currentLat = place.latitude;
+        currentLon = place.longitude;
+
+        currentLocationName =
+            place.name + ', ' + place.country;
+
+        await loadWeather(
+            currentLat,
+            currentLon,
+            currentLocationName
+        );
+
+    } catch (error) {
+
+        console.error(error);
+        alert('Search failed');
+
+    } finally {
+
+        document.getElementById('loader').style.display = 'none';
+
+    }
+}
+
+function startAutoRefresh() {
+
+    setInterval(() => {
+
+        if (currentLat !== null && currentLon !== null) {
+
+            loadWeather(
+                currentLat,
+                currentLon,
+                currentLocationName
+            );
+
+            console.log(
+                'Weather updated at',
+                new Date().toLocaleTimeString()
+            );
+        }
+
+    }, 300000); // 5 minutes
+}
+
+navigator.geolocation.getCurrentPosition(
+
+    (pos) => {
+
+        currentLat = pos.coords.latitude;
+        currentLon = pos.coords.longitude;
+
+        currentLocationName = 'Current Location';
+
+        loadWeather(
+            currentLat,
+            currentLon,
+            currentLocationName
+        );
+
+        startAutoRefresh();
+    },
+
+    () => {
+
+        currentLat = 13.0827;
+        currentLon = 80.2707;
+
+        currentLocationName = 'Chennai, India';
+
+        loadWeather(
+            currentLat,
+            currentLon,
+            currentLocationName
+        );
+
+        startAutoRefresh();
+    }
+
+);
+
+
+
+</script>
 </body>
-</html>
+</html>make it clean without changing anything strictly
